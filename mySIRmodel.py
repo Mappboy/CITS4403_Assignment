@@ -1,10 +1,6 @@
 #Simple SIR model
-# Three compartments 
-# S = number susceptible
-# I = number infectious
-# R = number recovered 
 
-
+# CONSIDER ADDING AN INFECTION TREE 
 #nodes = [0,1,2,3]
 #edges = [(0,1), (1,2), (3,1), (2,3)]
 #nodeListA = [0,1]
