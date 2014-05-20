@@ -36,11 +36,9 @@ import sys
 import random
 
 
+
 class Agent(object):
 	"""Simple agent class for model infected susceptible recovered"""
-	INFECTED_COUNT = 0
-	SUSCEPTIBLE_COUNT = 0
-	RECOVERED_COUNT = 0
 	def __init__(self,n,t_prob, r_prob, infected=False,recovered=False,susceptible=True):
 		self.infected = infected
 		self.recovered = recovered
@@ -50,28 +48,27 @@ class Agent(object):
 		#keep track of time since disease
 		self.dtime = 0
 		self.n = n
-		Agent.SUSCEPTIBLE_COUNT+=1
 	def infectAgent(self):
 		if self.recovered == False and self.susceptible == True and self.infected == False:
 			self.infected = True
 			self.susceptible = False
-			Agent.INFECTED_COUNT+=1
+			return True
+		return False
 			
 	def immuneAgent(self):
 		if self.infected == True and random.random() < self.r_prob:
 			self.recovered = True
 			self.infected = False
 			self.susceptible = False
-			Agent.RECOVERED_COUNT+=1
-			Agent.SUSCEPTIBLE_COUNT-=1
-			Agent.INFECTED_COUNT-=1
+			return True
+		return False
 
 	def __repr__(self):
 		return "%s" % self.n
 
 class SIRmodel(object):
 	"""Creates a simple SIR model object"""
-	def __init__(self, modelname, transmission_rate=0.7, recovery_time=5, days=40, r_prob=0.8, susceptible=0.9, infectious=1-1e-3, population=100, d_prob=0.6,death_prob_dis=None, death_prob_norm=None, birth_rate=None ):
+	def __init__(self, modelname, transmission_rate=0.65, recovery_time=3, days=50, r_prob=0.5, susceptible=0.9, infectious=1-1e-3, population=100, d_prob=0.6,death_prob_dis=None, death_prob_norm=None, birth_rate=None ):
 		self.name = modelname
 		self.death_prob_dis = death_prob_dis
 		self.death_prob_norm = death_prob_norm
@@ -102,35 +99,42 @@ class SIRmodel(object):
 		randrun = { 'er':nx.fast_gnp_random_graph(self.population,self.d_prob),
 				'kc':nx.karate_club_graph(),
 				'nws':nx.newman_watts_strogatz_graph(self.population,3,self.d_prob),
-				'cws':nx.connected_watts_strogatz_graph(self.population,3,self.d_prob),
+				'cws':nx.connected_watts_strogatz_graph(self.population,2,self.d_prob),
 				'ba':nx.barabasi_albert_graph(self.population,1)}
 		#This is causing the trouble need to map each edge to nodes :) 
 		self.diseasenetwork.add_edges_from([ (self.agents[x],self.agents[y]) for x,y in randrun[randtype].edges()])
-		#Should be globals an accessed inside agents 
-		for x in range(self.population):
-			if random.random() < 0.04:
-				self.agents[x].infectAgent()
-		Agent.SUSCEPTIBLE_COUNT = self.population - Agent.INFECTED_COUNT
+		#keep track of compartments
+		sList = [ x for x in self.agents ]
+		iList = []
+		rList = []
+		for susAgent in sList:
+			if random.random() < 0.25:
+				if susAgent.infectAgent():
+					iList.append(susAgent)
+					sList.remove(susAgent)
+
+		#TODO implement graph for keeping track of infection
+		infecGraph = nx.Graph(iList)
 		#Should probably randomise infection but just testing
 		#Randomly effect 5% of the population maybe
-		print "Infected count to start with : {}".format(Agent.INFECTED_COUNT)
+		print "Infected/Suscept count to start with : {} : {}  ".format(len(iList),len(sList))
 		while(start <= length):
-			iList = []
-			for agent in self.agents:
-				if agent.infected:
-					for neighbour in self.diseasenetwork.neighbors(agent):
-						if neighbour.susceptible and neighbour.t_prob < random.random() and neighbour not in iList:
-							iList.append(neighbour)
-							break
-					if agent.dtime > self.recovery_time:
-						agent.immuneAgent()
-					agent.dtime +=1
+			for agent in iList:
+				for neighbour in self.diseasenetwork.neighbors(agent):
+					if neighbour.susceptible and neighbour.t_prob < random.random() and neighbour not in iList:
+						iList.append(neighbour)
+						sList.remove(neighbour)
+				if agent.dtime > self.recovery_time:
+					if agent.immuneAgent():
+						rList.append(agent)
+						iList.remove(agent)
+				agent.dtime +=1
 
 			if start % 10== 0 :
 				susp = [ node for node in self.diseasenetwork.nodes() if node.susceptible ]
 				infec = [ node for node in self.diseasenetwork.nodes() if node.infected and not node.recovered ] 
 				rec = [ node for node in self.diseasenetwork.nodes() if node.recovered ] 
-				position = nx.spring_layout(self.diseasenetwork)
+				position = nx.circular_layout(self.diseasenetwork)
 				nx.draw_networkx_nodes(self.diseasenetwork, position, nodelist=susp, node_color="b")
 				nx.draw_networkx_nodes(self.diseasenetwork, position, nodelist=infec, node_color="r")
 				nx.draw_networkx_nodes(self.diseasenetwork, position, nodelist=rec, node_color="g")
@@ -138,13 +142,15 @@ class SIRmodel(object):
 				nx.draw_networkx_edges(self.diseasenetwork,position)
 				nx.draw_networkx_labels(self.diseasenetwork,position)
 
-				pl.show()
+				nx.draw(self.diseasenetwork)
+				pl.savefig("{0}_SIRmodel_network_{1}.pdf".format(self.name,start))
+
 			for neighbour in iList:
 				neighbour.infectAgent()
-			self.susceptibles.append(Agent.SUSCEPTIBLE_COUNT/self.population)
-			self.infected.append(Agent.INFECTED_COUNT/self.population)
-			self.recoverers.append(Agent.RECOVERED_COUNT/self.population)
-			print start, Agent.SUSCEPTIBLE_COUNT, Agent.INFECTED_COUNT, Agent.RECOVERED_COUNT
+			self.susceptibles.append(len(sList)/float(self.population))
+			self.infected.append(len(iList)/float(self.population))
+			self.recoverers.append(len(rList)/float(self.population))
+			print start, len(iList), len(rList) , len(sList)
 
 			start+=inc
 		#We can change how we add random stuff later possible part of values
@@ -158,20 +164,20 @@ class SIRmodel(object):
 		print "Attempting to print model",self.susceptibles,self.infected
 		pl.subplot(211)
 		pl.plot(range(self.days), self.susceptibles, '.g', label='Susceptibles')
-		pl.plot(range(self.days), self.recoverers, '.k', label='Recovereds')
-		#pl.legend(loc=0)
+		pl.plot(range(self.days), self.recoverers, '.k', label='Recovered')
+		pl.plot(range(self.days), self.infected, '.r', label='Infectious')
+		pl.legend(loc=0)
 		pl.title('Model for ' + self.name) 
 		pl.xlabel('Time')
-		pl.ylabel('Susceptibles and Recovereds')
-		pl.subplot(212)
-		pl.plot(range(self.days), self.infected, '.r', label='Infectious')
-		pl.xlabel('Time')
-		pl.ylabel('Infectious')
-		pl.show()
+		pl.ylabel('% in compartments')
+		#pl.subplot(212)
+		#pl.xlabel('Time')
+		#pl.ylabel('Infectious')
+		pl.savefig(self.name + "plot.pdf")
 
 def __main__():
-	aidsmod = SIRmodel("Test one",population=1000)
-	aidsmod.plot_sim
+	aidsmod = SIRmodel("Test_increased_infecpop",population=500)
+	aidsmod.plot_sim()
 
 if __name__ == '__main__':
 	__main__()
