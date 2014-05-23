@@ -111,16 +111,17 @@ class SIRmodel(object):
 			recov_prob = random.random()
 			agent.r_prob = recov_prob
 
-	def init_graph(self,g='reg',k=4):
+	def init_graph(self,g='reg',k=2):
 		"""Creates a graph of type g"""
 		self.diseasenetwork.add_nodes_from(self.agents)
 		#Rewiring of graphs could count as random_mixing 
 		#Types of random graphs
 		gtype = { 'er':nx.fast_gnp_random_graph(self.population,0.05),
-				'nws':nx.newman_watts_strogatz_graph(self.population,3,self.d_prob),
-				'cws':nx.connected_watts_strogatz_graph(self.population,4,0.7,10),
-				'ba':nx.barabasi_albert_graph(self.population,2),
-				'reg':nx.random_regular_graph(2,self.population),
+				'nws':nx.newman_watts_strogatz_graph(self.population,k,self.d_prob),
+				'ws':nx.watts_strogatz_graph(self.population,k,self.d_prob),
+				'cws':nx.connected_watts_strogatz_graph(self.population,k,0.7,10),
+				'ba':nx.barabasi_albert_graph(self.population,k),
+				'reg':nx.random_regular_graph(k,self.population),
 				'grid':nx.grid_2d_graph(self.population/2,self.population/2) }
 		#This is causing the trouble need to map each edge to nodes :) 
 		if g == 'grid':
@@ -160,6 +161,7 @@ class SIRmodel(object):
 		#Should probably randomise infection but just testing
 		#Randomly effect 5% of the population maybe
 		print "Infected/Suscept count to start with : {} : {} Graph is {} ".format(len(iList),len(sList),graphtype)
+		fig = pl.figure(figsize=(15,15),dpi=80)
 		while(start <= length and len(iList) != 0):
 			infected = [ x for x in iList]
 			for agent in infected:
@@ -176,7 +178,7 @@ class SIRmodel(object):
 				agent.dtime +=1
 
 			if start % 10== 0 :
-				self.plot_graphs(infecTrace,start)
+				self.plot_graphs(fig,start)
 
 			for neighbour in iList:
 				neighbour.infectAgent()
@@ -195,9 +197,15 @@ class SIRmodel(object):
 		self.rsimulations.append(self.recoverers)
 		self.ssimulations.append(self.susceptibles)
 
-	def plot_graphs(self,infecGraph,timep):
+	def plot_inf_graphs(self, infecGraph,timep):
 		pl.clf()
-		pl.figure(figsize=(15,15),dpi=80)
+		nx.draw(infecGraph,pos=nx.graphviz_layout(infecGraph,prog='twopi',args=''))
+		pl.savefig("{0}_SIRmodel_network_{1}_infection_tree.pdf".format(self.name,timep))
+		#nx.write_dot(infecGraph,"{0}_infection_tree_{1}.dot".format(self.name,timep))
+		pl.close()
+
+
+	def plot_graphs(self,fig, timep):
 		susp = [ node for node in self.diseasenetwork.nodes() if node.susceptible ]
 		infec = [ node for node in self.diseasenetwork.nodes() if node.infected and not node.recovered ] 
 		rec = [ node for node in self.diseasenetwork.nodes() if node.recovered ] 
@@ -217,12 +225,8 @@ class SIRmodel(object):
    		#pl.ylim(0, ymax)
 		nx.draw(self.diseasenetwork)
 		#nx.write_dot(self.diseasenetwork,"{0}_SIRmodel_network_{1}.dot".format(self.name,timep))
-		pl.savefig("{0}_SIRmodel_network_{1}.pdf".format(self.name,timep))
-		pl.clf()
-		nx.draw(infecGraph,pos=nx.graphviz_layout(infecGraph,prog='twopi',args=''))
-		pl.savefig("{0}_SIRmodel_network_{1}_infection_tree.pdf".format(self.name,timep))
-		#nx.write_dot(infecGraph,"{0}_infection_tree_{1}.dot".format(self.name,timep))
-		pl.close()
+		#pl.savefig("{0}_SIRmodel_network_{1}.pdf".format(self.name,timep))
+
 	def write_graphs(self,infec,timep):
 		pass
 
@@ -315,14 +319,14 @@ def __main__():
 
 	#Output Statistics
 	#Clustering coefficient, degree 
-	for graphs in [ 'er','nws','cws','ba','grid','reg']:
-		for disease in [ Disease("slowrecov",recovery_time=6), Disease("Badrecov",r_prob=0.1),
-				Disease("poortrans", transmission_rate=0.1), Disease("super",transmission_rate=0.9) ]:
-			model = SIRmodel("Test"+graphs,disease, population=100,graphtype=graphs)
-			model.run_sim_ntimes(10)
-			#model.init_graph(g=graphs)
-			#model.plot_sim()
-			#model.plot_determ()
+	#for graphs in [ 'er','nws','cws','ba','grid','reg']:
+	#	for disease in [ Disease("slowrecov",recovery_time=6), Disease("Badrecov",r_prob=0.1),
+	#			Disease("poortrans", transmission_rate=0.1), Disease("super",transmission_rate=0.9) ]:
+	#		model = SIRmodel("Test"+graphs,disease, population=10000,graphtype=graphs)
+	#		model.run_sim_ntimes(10)
+	#		#model.init_graph(g=graphs)
+	#		#model.plot_sim()
+	#		#model.plot_determ()
 
 	aidsmod = SIRmodel("Test_increased_infecpop",aids,population=50)
 	#aidsmod.randomise_recovery_agents()

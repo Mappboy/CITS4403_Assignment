@@ -3,6 +3,7 @@
 \documentclass{article}
 \usepackage{times}
 \usepackage{hyperref}
+\usepackage{mathtools}
 
 \begin{document}
 \title{Case Study: Propagation of contagions in complex networks}
@@ -13,8 +14,24 @@
 
 \section{Viruses, diseases and the health of networks}
 \paragraph{
-Spreading phenomenoma forrest fires percolation.
-Change this.
+Supposedly computers are racing towards a technological singularity were computers will have itelligence that is comparable to humans. 
+Social, biological, technological and communication networks are all examples of complex networks which behave in similar ways. One example of this is spreading phenomena exist for each of the networks information, pathogens, disease, innovation all flow through the network in a similar way, Diseases pass from individual to individual just a computer virus such as a botnet or trojan might. Harvesting an individuals contacts and then attempting to infect them. Just like real world diseases some viruses are more effective at infecting and infect individuals through different pathways.
+
+The most basic models of disease represents individuals into three compartments susceptible, infected and recovered. The spread of disease through this mode is described by a number of differential equations.
+These equations are as follows\\}
+\begin{equation}
+	{{dS \over{dt} } = {-\beta IS}}
+	 \frac{dS}{dt} = - \beta I S 
+	\frac{dI}{dt} = \beta I S - \nu I 
+	\end{equation}
+
+
+\paragraph{
+We can represent the spreading of disease in a number of different ways(Anderson, May 1992). From simple array models similar to cellular automata, graph models based upon contact of nodes to complex models based upon agent based models in which each entity possesses a number of attributes.
+}
+
+\paragraph{
+Homogenous mixing 
 Many social, biological, and communication systems can be properly described as complex 
 networks with nodes representing individuals or organizations and edges mimicking the 
 interactions among them [1-4]. For example, the neural system can be considered as a network 
@@ -26,7 +43,7 @@ networks [9-10], traffic networks [11], and so onn
 The spread of contagions (information, viruses, something) through networks is similar in both humans and computers.
 Both social networks and computer networks are examples of complex networks, attempting to estimate the spread of a contagion through them is difficult. 
 Deterministic models for epidemic disease spreading were worked out in the 1980s see wikipedia article.
-There are many different models and aspects to consider in disease modelling. }
+There are many different models and aspects to consider in disease modelling. 
 Many social, biological, and communication systems can be properly described as complex 
 networks with nodes representing individuals or organizations and edges mimicking the 
 interactions among them [1-4]. For example, the neural system can be considered as a network 
@@ -34,7 +51,7 @@ consisted of neurons connecting through neural fiber [5], the Internet is a netw
 autonomic computers connected by optic fiber or other communication media [6]. The analogous 
 examples are numerous: these include power grid networks [5], social networks [7-8], collaboration 
 networks [9-10], traffic networks [11], and so on. 
-
+}
 
 \section{Different compartmental models}
 \paragraph{
