@@ -350,36 +350,32 @@ def main(script, n='252', k='5', p='0.1', *args):
     vs = [Vertex(names.next()) for c in range(n)]
 
    
-    # create a graph
-        #Lets just collect infected and run it 10 times and compare averages 
-    for k in xrange(10):
-    	runvals[INFECTED] = run_epidemic(SmallWorldGraph(vs, k, p),0.15,0.2,3)
+    g = SmallWorldGraph(vs, k, p)
 
-    plot_compartments(runvals)
 
     #from time import clock
 
-    #print 'number of edges = ', len(g.edges())
-    #print 'Is connected?', g.is_connected()
-    #print 'diameter = ', g.diameter()
+    print 'number of edges = ', len(g.edges())
+    print 'Is connected?', g.is_connected()
+    print 'diameter = ', g.diameter()
 
-    #start = clock()
-    #print 'char_length = ', g.char_length()
-    #print clock()-start
-    #
-    #start = clock()
-    #print 'char_length2 = ', g.char_length2()
-    #print clock()-start
+    start = clock()
+    print 'char_length = ', g.char_length()
+    print clock()-start
+    
+    start = clock()
+    print 'char_length2 = ', g.char_length2()
+    print clock()-start
 
-    #start = clock()
-    #print 'char_length3 = ', g.char_length3()
-    #print clock()-start
+    start = clock()
+    print 'char_length3 = ', g.char_length3()
+    print clock()-start
 
-    #start = clock()
-    #print 'char_length4 = ', g.char_length4()
-    #print clock()-start
+    start = clock()
+    print 'char_length4 = ', g.char_length4()
+    print clock()-start
 
-    #print 'cluster_coef = ', g.cluster_coef()
+    print 'cluster_coef = ', g.cluster_coef()
    
     # draw the graph
     draw = False

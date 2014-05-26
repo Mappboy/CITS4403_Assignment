@@ -43,15 +43,12 @@ RES = spi.odeint(diff_eqs,INPUT,t_range)
 print RES
 
 #Ploting
-pl.subplot(211)
 pl.plot(RES[:,0], '-g', label='Susceptibles')
+pl.plot(RES[:,1], '-r', label='Infectious')
 pl.plot(RES[:,2], '-k', label='Recovereds')
 pl.legend(loc=0)
 pl.title('Program_2_1.py')
 pl.xlabel('Time')
-pl.ylabel('Susceptibles and Recovereds')
-pl.subplot(212)
-pl.plot(RES[:,1], '-r', label='Infectious')
+pl.ylabel('Compartments')
 pl.xlabel('Time')
-pl.ylabel('Infectious')
 pl.show()
