@@ -30,22 +30,29 @@ def run_epidemic(epidemic_graph,infection_rate,recovery_rate,ninfected,infection
     ----------------
     counts for each compartment during simulation
     """
+    
+    #Limit growth rate 
     if pgrowth > 1 or pgrowth < -1:
         return None
+    #Get population size and record length
     population = epidemic_graph.vertices()
     npop = float(len(population))
     recov = 0
+    
+    #start infecting random individuals
     for n in xrange(ninfected):
         patient_zero = random.choice(population)
         patient_zero.state = INFECTED
         patient_zero.infect_time = 0
+    
+    #keep track of compartments etc
     infec = ninfected
     susps = len(population) - infec
     counts = [[],[],[],[]]
     days = 0
     while ( True ):
         #Change population according to growth rate
-        #update_population()
+        #should probably be seperate function update_population()
         if growth:
             population = epidemic_graph.vertices()
             npop = float(len(population))
@@ -60,7 +67,7 @@ def run_epidemic(epidemic_graph,infection_rate,recovery_rate,ninfected,infection
                 else:
                     epidemic_graph.remove_vertex(random.choice(population))
     
-        #Actual part running simulation
+        #Actual part running simulation infect those susceptible
         #update_sim()
         days +=1
         for infected in [ x for x in population if x.state == INFECTED ]:
@@ -76,6 +83,7 @@ def run_epidemic(epidemic_graph,infection_rate,recovery_rate,ninfected,infection
                 infected.state = RECOVERED
                 infec -=1
                 recov +=1
+            #sis model
             elif not recover and ( infected.infect_time + infection_length == days) :
                 infected.state = SUSCEPTIBLE
                 infec -=1
@@ -86,9 +94,7 @@ def run_epidemic(epidemic_graph,infection_rate,recovery_rate,ninfected,infection
         #SIR model
         if recover:
             counts[RECOVERED].append(recov/npop)
-            #Check if we should end simulation
-        #Reproduction number new susceptible / new infected 
-        #counts[REPRODUCTION_N].append( susps - counts[SUSCEPTIBLE][days-1]/float(infec - )))
+        #Check if we should end simulation
         if infec <=  0 and days >= 100 or susps == npop:
             if not recover and susps <= 0:
                 break
