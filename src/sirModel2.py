@@ -1,24 +1,16 @@
 #Simple SIR model
 
-#RandomGraphs
-#er=nx.erdos_renyi_graph(100,0.15)
-#ws=nx.watts_strogatz_graph(30,3,0.1)
-#ba=nx.barabasi_albert_graph(100,5)
-#red=nx.random_lobster(100,0.9,0.9)
-# for colour could use spreading as well as representing those that are infected susceptible
-#http://networkx.github.io/documentation/latest/examples/drawing/random_geometric_graph.html
+
 #TODO:
 # Directed graph ?? 
 #percolation rate
 # rewire random graphs at time steps
-# compare grahs using r ? or something 
 # Make sure graphs are appropriately layed out
 # Add in SIS model
 # Add in SEIR
 # Add in MSEIRS
 # Add in deaths, births at each stage. 
 # Add in weighted edges for familiarity
-# Talk about GEMF
 # Effect of different values in the agents and model infection rate
 
 import networkx as nx
@@ -258,18 +250,18 @@ class SIRmodel(object):
 			self.run_sim(self.days,self.graphtype)
 		avgrun = self.finished/n
 		pl.clf()
-		print "{} has average run time of {} for {} simulations".format(self.disease,avgrun,n)
-		print self.ssimulations
+		#print "{} has average run time of {} for {} simulations".format(self.disease,avgrun,n)
+		#print self.ssimulations
 		average_infec_sims = np.array(self.isimulations).mean(axis=0)
 		average_recov_sims = np.array(self.rsimulations).mean(axis=0)
 		average_susp_sims = np.array(self.ssimulations).mean(axis=0)
-		pl.title('Average for ' + self.name + ' ' + str(n) + ' simulations') 
+		#pl.title('Average for ' + self.name + ' ' + str(n) + ' simulations') 
 		#pl.ylim(0,1.0)
-		pl.plot(average_infec_sims,'-b',label='Avg Infected')
-		pl.plot(average_recov_sims,'-r',label='Avg Recovered')
-		pl.plot(average_susp_sims,'-g',label='Avg susceptible')
-		pl.legend(loc=0)
-		pl.savefig("{0}_averages_infection_tree.pdf".format(self.name))
+		#pl.plot(average_infec_sims,'-b',label='Avg Infected')
+		#pl.plot(average_recov_sims,'-r',label='Avg Recovered')
+		#pl.plot(average_susp_sims,'-g',label='Avg susceptible')
+		#pl.legend(loc=0)
+		#pl.savefig("{0}_averages_infection_tree.pdf".format(self.name))
 		return average_infec_sims
 
 
@@ -347,17 +339,20 @@ def __main__():
 	for graphs in graphtypes:
 		#for disease in [ Disease("slowrecov",recovery_time=6), Disease("Badrecov",r_prob=0.1),
 		#		Disease("poortrans", transmission_rate=0.1), Disease("super",transmission_rate=0.9) ]:
-		disease = Disease("rand",transmission_rate=1,r_prob=0.5,recovery_time=1)
-		model = SIRmodel("Test"+graphs,disease, population=10000,graphtype=graphs,days=20,infectious=0.01)
+		disease = Disease("rand",transmission_rate=0.05,r_prob=0.2,recovery_time=3)
+		model = SIRmodel("Test"+graphs,disease, population=500,graphtype=graphs,days=100,infectious=0.01)
 		#average infections
 		#success = model.run_sim()
 		#degree = nx.average_neighbor_degree(model.diseasenetwork)
-		centrality = nx.degree_centrality(model.diseasenetwork)
+		#centrality = nx.degree_centrality(model.diseasenetwork)
 		#connectivity = nx.average_node_connectivity(model.diseasenetwork)
-		cluster = nx.average_clustering(model.diseasenetwork)
+		#cluster = nx.average_clustering(model.diseasenetwork)
 		infect.append(model.infected)
 	for val,pg in enumerate(graphtypes):
 		pl.plot(infect[val],label=pg)
+	pl.ylabel('% population infected')
+	pl.xlabel('Time')
+	pl.title('SIR in random graphs')
 	pl.legend(loc=0)
 	pl.show()
 		#avgform = model.run_sim_ntimes(100)

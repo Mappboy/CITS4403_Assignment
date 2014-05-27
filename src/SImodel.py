@@ -6,7 +6,6 @@ from RandomGraph import *
 from SmallWorldGraph import *
 from SmallWorldGraph import *
 from matplotlib import pyplot as pl
-import networkx as nx
 import numpy as np
 
 #TODO
@@ -95,16 +94,22 @@ def run_epidemic(epidemic_graph,infection_rate,recovery_rate,ninfected,infection
         if recover:
             counts[RECOVERED].append(recov/npop)
         #Check if we should end simulation
-        if infec <=  0 and days >= 100 or susps == npop:
-            if not recover and susps <= 0:
+        if infec <=  0 or days >= 1000 or susps == npop:
+            if not recover and susps <= 0 :
                 break
+            elif not recover and days > 1000:
+		break
             break
+    	print days
     print "Ran for {} days".format(days)
     return counts
 
 
 def plot_compartments(compvals,recover=False):
-    pl.ylabel('Susceptibles,Recovered,Infected')
+    if not recover:
+        pl.ylabel('Susceptibles and Infected')
+    else:
+        pl.ylabel('Susceptibles,Recovered,Infected')
     pl.ylim(0,1.0)
     pl.title('Epidemic model')
     pl.xlabel('Time')
@@ -154,15 +159,19 @@ def finishinfex(infecs,average=False):
         pass
     return new_array
 
-def main(script, n=100,k=15, kval=0.8, infection_rate=0.2, recovery_rate=0.1, infected=3, infec_len=3, recover='False', graphtype='rand', *args):
+def main(script, n=100,k=12,infection_rate=0.06, recovery_rate=0.06, infected=1, infec_len=2, recover='False', graphtype='small', kval=0.5,sims=10 *args):
     n = int(n)
     kval = float(kval)
     infection_rate = float(infection_rate)
     recovery_rate = float(recovery_rate)
     infected = int(infected)
     infec_len= int(infec_len)
-    recover= bool(recover)
+    if recover == 'False':
+    	recover= False
+    else:
+	    recover = True
     k = int(k)
+    sims = int(sims)
     #p = float(p)
     #num = int(num)
     #count = test_p(n, p, num)
@@ -176,15 +185,15 @@ def main(script, n=100,k=15, kval=0.8, infection_rate=0.2, recovery_rate=0.1, in
     g= graphs[graphtype]
     if graphtype == 'rand':
         g.add_random_edges(kval)
-    small = SmallWorldGraph(create_nverts(n),k,kval)
+    #small = SmallWorldGraph(create_nverts(n),k,kval)
     runvals = run_epidemic(g,infection_rate,recovery_rate,infected,infection_length=infec_len,recover=recover)
     plot_compartments(runvals,recover)
-    plot_compartments(run_epidemic(small,infection_rate,recovery_rate,infected,infection_length=infec_len,recover=recover),recover)
 
 
-#    for n in xrange(10):
-#        g= RandomGraph(create_nverts(20))
-#        g.add_random_edges(randk)
+    #for n in xrange(10):
+    #    g= RandomGraph(create_nverts(n))
+#	if graphtype == 'rand':
+     #   	g.add_random_edges(randk)
 #    args = [g,0.05,0.2,3,0.05]
 #    runvals = run_n_times(10,args)
 #        #runvals = run_epidemic(g,0.05,0.2,3,0.05)
